@@ -7,6 +7,6 @@ export class AppService {
   }
 
   postHello(): string {
-    return 'This is a post test';
+    return 'This is a post test!';
   }
 }
