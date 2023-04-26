@@ -15,4 +15,8 @@ export class CreateUserDTO {
     minUppercase: 1,
   })
   password: string;
+
+  createdAt: Date;
+
+  updatedAt: Date;
 }
