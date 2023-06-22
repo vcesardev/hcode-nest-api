@@ -6,13 +6,15 @@ import {
   Param,
   Patch,
   Post,
-  Put,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CreateUserDTO } from './dtos/IcreateUser.dto';
 import { UpdatePartialUserDTO } from './dtos/IupdatePartialUser.dto';
-import { UpdateUserDTO } from './dtos/IupdateUser.dto';
 import { UserService } from './user.service';
+import { LogInterceptor } from '../../interceptors/log.interceptor';
+import { ParamId } from '../../decorators/paramId-decorator';
 
+@UseInterceptors(LogInterceptor)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -32,8 +34,7 @@ export class UserController {
   }
 
   @Get(':id')
-  async findOne(@Param() params) {
-    const { id } = params;
+  async findOne(@ParamId() id: number) {
     return this.userService.findById(Number(id));
   }
 
@@ -48,10 +49,9 @@ export class UserController {
 
   @Patch(':id')
   async partialUpdate(
-    @Param() params,
+    @ParamId() id: number,
     @Body() { email, name, password }: UpdatePartialUserDTO,
   ) {
-    const { id } = params;
     return await this.userService.updateById(Number(id), {
       email,
       name,
