@@ -1,4 +1,11 @@
-import { IsEmail, IsString, IsStrongPassword } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator';
+import { Role } from '../../../types/User';
 
 export class CreateUserDTO {
   @IsString()
@@ -19,4 +26,8 @@ export class CreateUserDTO {
   createdAt: Date;
 
   updatedAt: Date;
+
+  @IsOptional()
+  @IsEnum(Role)
+  role: number;
 }
