@@ -6,6 +6,7 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { FilesModule } from './modules/files/files.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { APP_GUARD } from '@nestjs/core';
     ThrottlerModule.forRoot({ ttl: 60, limit: 10 }),
     forwardRef(() => UserModule),
     forwardRef(() => AuthModule),
+    forwardRef(() => FilesModule),
   ],
   controllers: [AppController],
   providers: [
