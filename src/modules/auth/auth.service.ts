@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { MailerService } from '@nestjs-modules/mailer/dist';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRegisterDTO } from './dtos/IAuthRegister.dto';
@@ -17,6 +18,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
     private readonly userService: UserService,
+    private readonly mailer: MailerService,
   ) {}
 
   async createToken(user: User) {
@@ -41,6 +43,19 @@ export class AuthService {
       const data = this.jwtService.verify(token, {
         audience: 'users',
         issuer: 'login',
+      });
+
+      return data;
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
+  }
+
+  checkResetToken(token: string) {
+    try {
+      const data = this.jwtService.verify(token, {
+        audience: 'users',
+        issuer: 'forget',
       });
 
       return data;
@@ -93,21 +108,43 @@ export class AuthService {
       throw new UnauthorizedException('E-mail incorreto.');
     }
 
-    //todo add envio de email
+    const token = this.jwtService.sign(
+      {
+        email: user.email,
+      },
+      {
+        expiresIn: '30 minutes',
+        subject: String(user.id),
+        issuer: 'forget',
+        audience: 'users',
+      },
+    );
+
+    await this.mailer.sendMail({
+      subject: 'Recuperação de senha',
+      to: 'vitorcesar261@gmail.com',
+      template: 'forget',
+      context: {
+        name: user.name,
+        token: token,
+      },
+    });
 
     return true;
   }
 
   async reset(password: string, token: string) {
-    //todo validar token, através da validação será possível extrair o id do usuário
+    const data = await this.checkResetToken(token);
 
-    const id = 0;
+    const id = Number(data.sub);
+
+    const salt = 10;
+
+    password = await bcrypt.hash(password, salt);
 
     const user = await this.prisma.user.update({
       where: { id },
-      data: {
-        password: password,
-      },
+      data: { password: password },
     });
 
     return this.createToken(user);
